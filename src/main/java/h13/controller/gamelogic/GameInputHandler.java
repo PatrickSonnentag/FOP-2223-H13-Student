@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * A {@link GameInputHandler} is responsible for handling the input from the user on a {@link h13.view.gui.GameScene}.
+ * A {@link GameInputHandler} is responsible for handling the input from the user on a {@link GameScene}.
  */
 public class GameInputHandler {
     // --Variables-- //

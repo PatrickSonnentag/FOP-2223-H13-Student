@@ -5,7 +5,6 @@ import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
 
 import static h13.controller.GameConstants.ORIGINAL_GAME_BOUNDS;
-import static org.tudalgo.algoutils.student.Student.crash;
 
 /**
  * A {@link Utils} class containing utility methods.
@@ -21,7 +20,13 @@ public class Utils {
      * @see h13.controller.GameConstants
      */
     public static Bounds clamp(final Bounds bounds) {
-        return crash(); // TODO: H1.1 - remove if implemented
+        double minX = Math.max(ORIGINAL_GAME_BOUNDS.getMinX(),
+            Math.min(ORIGINAL_GAME_BOUNDS.getMaxX() - bounds.getWidth(), bounds.getMinX()));
+        double minY = Math.max(ORIGINAL_GAME_BOUNDS.getMinY(),
+            Math.min(ORIGINAL_GAME_BOUNDS.getMaxY() - bounds.getHeight(), bounds.getMinY()));
+
+        return new BoundingBox(minX, minY,
+            bounds.getWidth(), bounds.getHeight());
     }
 
     /**
@@ -34,6 +39,9 @@ public class Utils {
      * @return the moved bounds
      */
     public static Bounds getNextPosition(final Bounds bounds, final double velocity, final Direction direction, final double elapsedTime) {
-        return crash(); // TODO: H1.1 - remove if implemented
+        double constant = velocity * elapsedTime;
+        double newMinX = bounds.getMinX() + direction.getX() * constant;
+        double newMinY = bounds.getMinY() + direction.getY() * constant;
+        return new BoundingBox(newMinX, newMinY, bounds.getWidth(), bounds.getHeight());
     }
 }

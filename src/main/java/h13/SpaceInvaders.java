@@ -12,7 +12,6 @@ public class SpaceInvaders extends Application {
 
     @Override
     public void start(final Stage stage) throws Exception {
-        //Student.setCrashEnabled(false);
         stage.setMinWidth(450);
         stage.setMinHeight(400);
         SceneSwitcher.loadScene(SceneSwitcher.SceneType.MAIN_MENU, stage);

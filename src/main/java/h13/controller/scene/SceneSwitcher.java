@@ -111,7 +111,7 @@ public final class SceneSwitcher {
      * @param sac   The {@link SceneAndController} to switch to and initialize.
      * @param stage The {@link Stage} to show the {@link Scene} on.
      * @return The {@link Scene} that was switched to.
-     * @see Stage#setScene(javafx.scene.Scene)
+     * @see Stage#setScene(Scene)
      * @see SceneController#initStage(Stage)
      */
     private static Scene loadScene(final SceneAndController sac, final Stage stage) {

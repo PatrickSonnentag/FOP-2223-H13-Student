@@ -1,12 +1,12 @@
 package h13.model.gameplay.sprites;
 
+import h13.controller.ApplicationSettings;
 import h13.model.gameplay.Direction;
 import h13.model.gameplay.GameState;
 import javafx.scene.paint.Color;
 import org.jetbrains.annotations.Nullable;
 
 import static h13.controller.GameConstants.*;
-import static org.tudalgo.algoutils.student.Student.crash;
 
 /**
  * A {@link BattleShip} is a {@link Sprite} that can shoot {@linkplain Bullet bullets} and be friends or {@linkplain Enemy enemies} with other BattleShips.
@@ -82,7 +82,7 @@ public class BattleShip extends Sprite {
      * @return {@code true} if the given {@link BattleShip} is befriended with this Ship, {@code false} otherwise.
      */
     public boolean isFriend(final BattleShip other) {
-        return crash(); // TODO: H1.3 - remove if implemented
+        return !((this instanceof Enemy && !(other instanceof Enemy)) || this instanceof Player && !(other instanceof Player));
     }
 
     /**
@@ -103,6 +103,15 @@ public class BattleShip extends Sprite {
      * @param direction The {@link Direction} to shoot the {@link Bullet} towards.
      */
     protected void shoot(final Direction direction) {
-        crash(); // TODO: H1.3 - remove if implemented
+
+        if(hasBullet() && !ApplicationSettings.instantShootingProperty().get()) {
+            return;
+        }
+        double bulletX = getBounds().getCenterX() - BULLET_WIDTH / 2.0;
+        double bulletY = getBounds().getCenterY() - BULLET_HEIGHT / 2.0;
+
+        Bullet bullet = new Bullet(bulletX, bulletY, getGameState(),this, direction);
+        setBullet(bullet);
+        getGameState().getToAdd().add(bullet);
     }
 }

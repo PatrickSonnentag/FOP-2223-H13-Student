@@ -4,20 +4,26 @@ import h13.controller.ApplicationSettings;
 import h13.controller.GameConstants;
 import h13.controller.scene.game.GameController;
 import h13.model.gameplay.Updatable;
+import h13.model.gameplay.sprites.Bullet;
+import h13.model.gameplay.sprites.Enemy;
+import h13.model.gameplay.sprites.Player;
+import h13.model.gameplay.sprites.Sprite;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
+import javafx.scene.text.Text;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.Scale;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+
 import static h13.controller.GameConstants.*;
-import static org.tudalgo.algoutils.student.Student.crash;
 
 
 /**
  * A {@link GameBoard} is a {@link Canvas} on which the
- * {@link h13.model.gameplay.sprites.Sprite}s as well as the HUD are drawn.
+ * {@link Sprite}s as well as the HUD are drawn.
  * It is part of the {@link GameScene} and is controlled by a
  * {@link GameController}.
  */
@@ -107,7 +113,15 @@ public class GameBoard extends Canvas implements Updatable {
      * @param gc The {@link GraphicsContext} to draw the background to.
      */
     private void drawBackground(final GraphicsContext gc) {
-        crash(); // TODO: H2.3 - remove if implemented
+        gc.setFill(gameScene.getFill());
+        if(backgroundImage != null) {
+            gc.drawImage(backgroundImage, ORIGINAL_GAME_BOUNDS.getMinX(), ORIGINAL_GAME_BOUNDS.getMinY(),
+                ORIGINAL_GAME_BOUNDS.getWidth(), ORIGINAL_GAME_BOUNDS.getHeight());
+        } else {
+            gc.clearRect(ORIGINAL_GAME_BOUNDS.getMinX(), ORIGINAL_GAME_BOUNDS.getMinY(),
+                ORIGINAL_GAME_BOUNDS.getWidth(), ORIGINAL_GAME_BOUNDS.getHeight());
+        }
+        gc.restore();
     }
 
     /**
@@ -125,7 +139,31 @@ public class GameBoard extends Canvas implements Updatable {
      * @param gc The {@link GraphicsContext} to draw the sprites to.
      */
     private void drawSprites(final GraphicsContext gc) {
-        crash(); // TODO: H2.3 - remove if implemented
+        List<Sprite> sprites = getGameController().getGameState().getSprites().stream().toList();
+
+        for (Sprite sprite : sprites) {
+            if (sprite instanceof Bullet) {
+                SpriteRenderer.renderSprite(gc, sprite);
+            }
+        }
+
+        for (Sprite sprite : sprites) {
+            if (sprite instanceof Enemy) {
+                SpriteRenderer.renderSprite(gc, sprite);
+            }
+        }
+
+        for (Sprite sprite : sprites) {
+            if (sprite instanceof Player) {
+                SpriteRenderer.renderSprite(gc, sprite);
+            }
+        }
+
+        for (Sprite sprite : sprites) {
+            if (!(sprite instanceof Bullet) && !(sprite instanceof Enemy) && !(sprite instanceof Player)) {
+                SpriteRenderer.renderSprite(gc, sprite);
+            }
+        }
     }
 
     /**
@@ -140,9 +178,24 @@ public class GameBoard extends Canvas implements Updatable {
      * <br>
      *
      * @param gc The {@link GraphicsContext} to draw the HUD to.
+     *
      */
     private void drawHUD(final GraphicsContext gc) {
-        crash(); // TODO: H2.3 - remove if implemented
+        String scoreString = "Score: "+ gameScene.getController().getPlayer().getScore();
+        Text scoreText = new Text(scoreString);
+        scoreText.setFont(HUD_FONT);
+
+        String livesString = "Lives: "+ gameScene.getController().getPlayer().getHealth();
+        Text livesText = new Text(livesString);
+        livesText.setFont(HUD_FONT);
+
+        gc.setFont(HUD_FONT);
+        gc.setFill(HUD_TEXT_COLOR);
+
+        gc.fillText(scoreString, ORIGINAL_GAME_BOUNDS.getMinX() + HUD_PADDING,
+            ORIGINAL_GAME_BOUNDS.getMinY() + scoreText.getLayoutBounds().getHeight() + HUD_PADDING);
+        gc.fillText(livesString, ORIGINAL_GAME_BOUNDS.getMaxX() - livesText.getLayoutBounds().getWidth() - HUD_PADDING,
+            ORIGINAL_GAME_BOUNDS.getMinY() + livesText.getLayoutBounds().getHeight() + HUD_PADDING);
     }
 
     /**
@@ -158,6 +211,11 @@ public class GameBoard extends Canvas implements Updatable {
      * @param gc The {@link GraphicsContext} to draw the border to.
      */
     private static void drawBorder(final GraphicsContext gc) {
-        crash(); // TODO: H2.3 - remove if implemented
+        gc.setStroke(BORDER_COLOR);
+        gc.setLineWidth(BORDER_WIDTH);
+        gc.strokeRect(ORIGINAL_GAME_BOUNDS.getMinX(), ORIGINAL_GAME_BOUNDS.getMinY(),
+            ORIGINAL_GAME_BOUNDS.getWidth(),
+            ORIGINAL_GAME_BOUNDS.getHeight());
+        gc.restore();
     }
 }

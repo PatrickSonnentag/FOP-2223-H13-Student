@@ -24,7 +24,7 @@ public final class GameConstants {
      * The aspect ratio
      */
     public static double ASPECT_RATIO = ORIGINAL_GAME_BOUNDS.getWidth() / ORIGINAL_GAME_BOUNDS.getHeight();
-    
+
     /**
      * The amount of enemy rows.
      */
@@ -59,7 +59,7 @@ public final class GameConstants {
      * The relative horizontal movement distance.
      */
     public static double HORIZONTAL_ENEMY_MOVE_DISTANCE = 0.1;
-    
+
     /**
      * The vertical movement distance.
      */
@@ -153,5 +153,5 @@ public final class GameConstants {
     /**
      * Border Color.
      */
-    public static javafx.scene.paint.Color BORDER_COLOR = javafx.scene.paint.Color.PALEGREEN;
+    public static Color BORDER_COLOR = Color.PALEGREEN;
 }

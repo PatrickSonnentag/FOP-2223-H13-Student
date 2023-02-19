@@ -1,12 +1,14 @@
 package h13.model.gameplay;
 
+import h13.model.gameplay.sprites.Enemy;
+import h13.shared.Utils;
+import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
 
 import static h13.controller.GameConstants.*;
-import static org.tudalgo.algoutils.student.Student.crash;
 
 /**
- * The {@link EnemyMovement} class is responsible for moving the {@linkplain h13.model.gameplay.sprites.Enemy enemies} in a grid.
+ * The {@link EnemyMovement} class is responsible for moving the {@linkplain Enemy enemies} in a grid.
  */
 public class EnemyMovement implements Updatable {
 
@@ -92,7 +94,7 @@ public class EnemyMovement implements Updatable {
      * @return {@code true} if the bottom was reached, {@code false} otherwise.
      */
     public boolean bottomWasReached() {
-        return crash(); // TODO: H1.6 - remove if implemented
+        return getEnemyBounds().getMaxY() >= ORIGINAL_GAME_BOUNDS.getMaxY();
     }
 
     /**
@@ -112,7 +114,26 @@ public class EnemyMovement implements Updatable {
      * @return The BoundingBox.
      */
     public Bounds getEnemyBounds() {
-        return crash(); // TODO: H1.6 - remove if implemented
+        double minX = Double.MAX_VALUE;
+        double minY = Double.MAX_VALUE;
+        double maxX = Double.MIN_VALUE;
+        double maxY = Double.MIN_VALUE;
+
+        for (Enemy enemy : getGameState().getEnemies()) {
+            if (enemy.getBounds().getMinX() < minX) {
+                minX = enemy.getBounds().getMinX();
+            }
+            if (enemy.getBounds().getMinY() < minY) {
+                minY = enemy.getBounds().getMinY();
+            }
+            if (enemy.getBounds().getMaxX() > maxX) {
+                maxX = enemy.getBounds().getMaxX();
+            }
+            if (enemy.getBounds().getMaxY() > maxY) {
+                maxY = enemy.getBounds().getMaxY();
+            }
+        }
+        return new BoundingBox(minX, minY, maxX - minX, maxY - minY);
     }
 
     /**
@@ -122,14 +143,27 @@ public class EnemyMovement implements Updatable {
      * @return {@code true} if the target Position of the current movement iteration is reached, {@code false} otherwise.
      */
     public boolean targetReached(final Bounds enemyBounds) {
-        return crash(); // TODO: H1.6 - remove if implemented
+        return (getDirection() == Direction.DOWN && enemyBounds.getMinY() >= yTarget) ||
+            (enemyBounds.getMinX() <= ORIGINAL_GAME_BOUNDS.getMinX() && getDirection() == Direction.LEFT) ||
+            (enemyBounds.getMaxX() >= ORIGINAL_GAME_BOUNDS.getWidth() && getDirection() == Direction.RIGHT);
     }
 
     // --Movement-- //
 
     @Override
     public void update(final double elapsedTime) {
-        crash(); // TODO: H1.6 - remove if implemented
+        Bounds bounds = Utils.getNextPosition(getEnemyBounds(), velocity, getDirection(), elapsedTime);
+
+        if(!bottomWasReached()) {
+            if(targetReached(bounds)) {
+                nextMovement(getEnemyBounds());
+                updatePositions(bounds.getMinX() - getEnemyBounds().getMinX(),
+                    bounds.getMinY() - getEnemyBounds().getMinY());
+            } else {
+                updatePositions(bounds.getMinX() - getEnemyBounds().getMinX(),
+                    bounds.getMinY() - getEnemyBounds().getMinY());
+            }
+        }
     }
 
     /**
@@ -139,7 +173,14 @@ public class EnemyMovement implements Updatable {
      * @param deltaY The deltaY.
      */
     public void updatePositions(final double deltaX, final double deltaY) {
-        crash(); // TODO: H1.6 - remove if implemented
+        for (Enemy enemy : gameState.getEnemies()) {
+            Bounds futureEnemyBound = new BoundingBox(enemy.getX() + deltaX, enemy.getY() + deltaY,
+                enemy.getWidth(), enemy.getHeight());
+            futureEnemyBound = Utils.clamp(futureEnemyBound);
+
+            enemy.setX(futureEnemyBound.getMinX());
+            enemy.setY(futureEnemyBound.getMinY());
+        }
     }
 
     /**
@@ -148,7 +189,17 @@ public class EnemyMovement implements Updatable {
      * @param enemyBounds The BoundingBox of all alive enemies.
      */
     public void nextMovement(final Bounds enemyBounds) {
-        crash(); // TODO: H1.6 - remove if implemented
+        if(direction.isHorizontal()) {
+            setDirection(Direction.DOWN);
+            yTarget += VERTICAL_ENEMY_MOVE_DISTANCE;
+        } else if (direction.isVertical()) {
+            if (enemyBounds.getMaxX() >= ORIGINAL_GAME_BOUNDS.getWidth()) {
+                setDirection(Direction.LEFT);
+            } else {
+                setDirection(Direction.RIGHT);
+            }
+        }
+        setVelocity(velocity + ENEMY_MOVEMENT_SPEED_INCREASE);
     }
 
     /**

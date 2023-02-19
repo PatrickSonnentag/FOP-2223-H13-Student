@@ -2,10 +2,12 @@ package h13.controller.gamelogic;
 
 import h13.controller.scene.game.GameController;
 import h13.model.gameplay.sprites.Player;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 
+import java.util.Set;
+
 import static h13.controller.GameConstants.*;
-import static org.tudalgo.algoutils.student.Student.crash;
 
 /**
  * A {@link PlayerController} is responsible for instantiating and updating the {@linkplain Player players}.
@@ -76,7 +78,20 @@ public class PlayerController {
      * @param e A {@link KeyEvent} to handle which relates to a Player action.
      */
     private void playerKeyAction(final KeyEvent e) {
-        crash(); // TODO: H3.2 - remove if implemented
+        player.stop();
+        player.setKeepShooting(false);
+        Set<KeyCode> presses = gameController.getGameInputHandler().getKeysPressed();
+
+        boolean leftPressed = presses.contains(KeyCode.A) || presses.contains(KeyCode.LEFT);
+        boolean rightPressed = presses.contains(KeyCode.D) || presses.contains(KeyCode.RIGHT);
+
+        if(leftPressed && !rightPressed) {
+            player.moveLeft();
+        } if (rightPressed && !leftPressed) {
+            player.moveRight();
+        } if (presses.contains(KeyCode.SPACE)) {
+            player.setKeepShooting(true);
+        }
     }
 
     /**

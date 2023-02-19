@@ -5,6 +5,7 @@ import h13.controller.gamelogic.EnemyController;
 import h13.controller.gamelogic.GameInputHandler;
 import h13.controller.gamelogic.PlayerController;
 import h13.controller.scene.SceneController;
+import h13.model.HighscoreEntry;
 import h13.model.gameplay.GameState;
 import h13.model.gameplay.Updatable;
 import h13.model.gameplay.sprites.*;
@@ -12,12 +13,16 @@ import h13.view.gui.GameBoard;
 import h13.view.gui.GameScene;
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.TextInputDialog;
+import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static org.tudalgo.algoutils.student.Student.crash;
 
 /**
  * A {@link SceneController} that controls the {@link GameScene}.
@@ -31,7 +36,7 @@ public class GameController extends SceneController implements Updatable {
     /**
      * The {@link GameState} that is our main access point to the model.
      */
-    private GameState gameState = new GameState();
+    private final GameState gameState = new GameState();
 
     /**
      * The {@link GameScene} that is controlled by this {@link GameController}.
@@ -57,7 +62,7 @@ public class GameController extends SceneController implements Updatable {
      */
     private PlayerController playerController;
     /**
-     * The {@link EnemyController} that controls the {@link h13.model.gameplay.sprites.Enemy}s.
+     * The {@link EnemyController} that controls the {@link Enemy}s.
      *
      * @see #enemyController
      */
@@ -237,9 +242,6 @@ public class GameController extends SceneController implements Updatable {
      * Initializes the {@link #gameScene}.
      */
     private void init() {
-        // reset GameState
-        gameState = new GameState();
-        
         // Keyboard input handler
         setGameInputHandler(new GameInputHandler(getGameScene()));
 
@@ -254,9 +256,6 @@ public class GameController extends SceneController implements Updatable {
 
         // start the game loop
         gameLoop.start();
-        
-        // unpause the game if necessary
-        if (isPaused()) resume();
     }
 
     /**
@@ -286,7 +285,33 @@ public class GameController extends SceneController implements Updatable {
      * Handles what happens when the {@linkplain Player player} is Defeated.
      */
     private void lose() {
-        crash(); // TODO: H3.1 - remove if implemented
+        gameLoop.stop();
+        TextInputDialog highscore = new TextInputDialog();
+        highscore.setTitle("Resume");
+        highscore.setHeaderText("You have lost!");
+        highscore.setContentText("Please add your username for the highscore list.");
+        Optional<String> playerName =highscore.showAndWait();
+
+        String name = playerName.isPresent() && !playerName.get().equals("") ? playerName.get() : "Anonymous";
+        HighscoreEntry newEntry = new HighscoreEntry(name,
+            new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()), getPlayer().getScore());
+        // Just dump new entries into the list
+        ApplicationSettings.getHighscores().add(0, newEntry);
+
+
+        Alert restart = new Alert(Alert.AlertType.CONFIRMATION);
+        restart.setContentText("Do you want play a new round and try again?");
+        restart.setHeaderText("Restart");
+        restart.setTitle("Resume");
+
+        Optional<ButtonType> result = restart.showAndWait();
+        if(result.get() == ButtonType.OK) {
+            reset();
+            this.loadGameScene(new ActionEvent());  // Breaks without that line...
+        } else if (result.get() == ButtonType.CANCEL) {
+            loadMainMenuScene(new ActionEvent());
+
+        }
     }
 
     /**
@@ -302,7 +327,24 @@ public class GameController extends SceneController implements Updatable {
      */
     private void handleKeyboardInputs() {
         getGameInputHandler().addOnKeyReleased(k -> {
-            crash(); // TODO: H3.1 - remove if implemented
+            KeyCode input = k.getCode();
+            if(input == KeyCode.ESCAPE) {
+                gameLoop.stop();
+
+                Alert surrender = new Alert(Alert.AlertType.CONFIRMATION);
+                surrender.setContentText("Do you want to surrender?");
+                surrender.setHeaderText("You paused the game");
+                surrender.setTitle("Pause");
+
+                Optional<ButtonType> result = surrender.showAndWait();
+                if(result.get() == ButtonType.OK) {
+                    lose();
+                } else if (result.get() == ButtonType.CANCEL) {
+                    gameLoop.start();
+                }
+            } else if (input == KeyCode.F11) {
+                getStage().setFullScreen(true);
+            }
         });
     }
 
@@ -349,7 +391,19 @@ public class GameController extends SceneController implements Updatable {
      * Calculate the collision between the sprites and damages the collided sprites.
      */
     private void doCollisions() {
-        crash(); // TODO: H3.1 - remove if implemented
+        List<Sprite> sprites = gameState.getSprites().stream().toList();
+
+        for(int i = 0; i < sprites.size(); i++) {
+            if (sprites.get(i) instanceof Bullet bullet) {
+                for (Sprite sprite : sprites) {
+                    if (sprite instanceof BattleShip battleShip) {
+                        if (bullet.canHit(battleShip)) {
+                            bullet.hit(battleShip);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -358,6 +412,10 @@ public class GameController extends SceneController implements Updatable {
      * @param damaged The damaged sprites.
      */
     public void updatePoints(final List<Sprite> damaged) {
-        crash(); // TODO: H3.1 - remove if implemented
+        for (Sprite sprite : damaged) {
+            if (sprite instanceof Enemy && sprite.isDead()) {
+                getPlayer().addPoints(((Enemy) sprite).getPointsWorth());
+            }
+        }
     }
 }

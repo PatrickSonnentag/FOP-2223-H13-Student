@@ -56,7 +56,7 @@ public final class EnemyController {
      * @see Enemy#isDead()
      */
     public boolean isDefeated() {
-        return crash(); // TODO: H3.3 - remove if implemented
+        return gameController.getGameState().getAliveEnemies().size() == 0;
     }
 
     // --Other Methods-- //
